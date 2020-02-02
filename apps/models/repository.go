@@ -15,7 +15,7 @@ func (r *Repository) collection() *mgo.Collection {
 
 // GetAll получить все ссылки
 func (r *Repository) GetAll() (links []*Link, err error) {
-	err = r.collection().Find(nil).All(&links)
+	err = r.collection().Find(nil).Sort("link_group", "id").All(&links)
 	return links, err
 }
 
@@ -39,4 +39,10 @@ func (r *Repository) UpdateLink(l *Link) error {
 func (r *Repository) DeleteLink(id int64) (err error) {
 	err = r.collection().RemoveId(id)
 	return err
+}
+
+// GetGroups получить все группы
+func (r *Repository) GetGroups() (groups []string, err error) {
+	err = r.collection().Find(nil).Distinct("link_group", &groups)
+	return groups, err
 }

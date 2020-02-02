@@ -19,9 +19,9 @@ type Handler struct {
 }
 
 // GetLinkListHandler обработка запроса на получение всех ссылок
-func(h *Handler) GetLinkListHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetLinkListHandler(w http.ResponseWriter, r *http.Request) {
 	var (
-		res []*models.Link
+		res []*models.LinksByGroup
 		lm  *models.LinkManager
 		err error
 	)
@@ -34,9 +34,9 @@ func(h *Handler) GetLinkListHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.ExecTemplate(w, "index.html", struct {
-		Links []*models.Link
+		LinksByGroup []*models.LinksByGroup
 	}{
-		Links: res,
+		LinksByGroup: res,
 	})
 }
 
@@ -70,12 +70,13 @@ func (h *Handler) UpdateLinkForm(w http.ResponseWriter, r *http.Request) {
 // CreateLinkHandler создать ссылку
 func CreateLinkHandler(w http.ResponseWriter, r *http.Request) {
 	var (
-		lm      *models.LinkManager
+		lm  *models.LinkManager
 		err error
 	)
 
 	linkNew := &models.Link{
 		Url:         r.FormValue("url"),
+		LinkGroup:   r.FormValue("linkGroup"),
 		Description: r.FormValue("description"),
 	}
 
@@ -116,12 +117,13 @@ func GetLinkHandler(w http.ResponseWriter, r *http.Request) {
 // UpdateLinkHandler обновить ссылку
 func UpdateLinkHandler(w http.ResponseWriter, r *http.Request) {
 	var (
-		lm   *models.LinkManager
-		id   int
+		lm  *models.LinkManager
+		id  int
 		err error
 	)
 	link := &models.Link{
 		Url:         r.FormValue("url"),
+		LinkGroup:   r.FormValue("linkGroup"),
 		Description: r.FormValue("description"),
 	}
 	id, err = strconv.Atoi(mux.Vars(r)["id"])
@@ -192,7 +194,7 @@ func respError(w http.ResponseWriter, code int, errMessage string) {
 }
 
 // ExecTemplate записывает ответ с шаблоном
-func(h *Handler) ExecTemplate(w http.ResponseWriter, name string, data interface{}) {
+func (h *Handler) ExecTemplate(w http.ResponseWriter, name string, data interface{}) {
 	var err error
 	err = h.Tmpl.ExecuteTemplate(w, name, data)
 	if err != nil {
