@@ -14,24 +14,29 @@
     <table class="table">
         <thead>
         <tr>
-            <th>ID</th>
+{{/*            <th>ID</th>*/}}
+            <th>Group</th>
             <th>URL</th>
             <th>Description</th>
-{{/*            <th style="width:60px;">Edited</th>*/}}
             <th style="width:140px;"><a href="/create" class="btn btn-success">Create</a></th>
         </tr>
         </thead>
         <tbody>
+        {{range .LinksByGroup}}
+            <tr>
+            <td rowspan="{{.Count}}"><b>{{.Name}}</b></td>
+            </tr>
         {{range .Links}}
             <tr>
-                <td>{{.ID}}</td>
+{{/*                <td>{{.ID}}</td>*/}}
                 <td>{{.Url}}</td>
-                <td>{{.Description}}</td>
+                <td style="width: 75%"><textarea style="width:100%; border: none">{{.Description}}</textarea></td>
                 <td>
                     <a href="/links/{{.ID}}" class="btn btn-primary">Edit</a>
                     <span data-id="{{.ID}}" class="do-delete btn btn-danger">Del</span>
                 </td>
             </tr>
+        {{end}}
         {{end}}
         </tbody>
     </table>

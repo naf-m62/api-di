@@ -12,7 +12,8 @@ type LinkManager struct {
 }
 
 // GetAll получить все ссылки
-func (m *LinkManager) GetAll() (links []*Link, err error) {
+func (m *LinkManager) GetAll() (linksByG []*LinksByGroup, err error) {
+	var links []*Link
 	links, err = m.Repo.GetAll()
 	if err != nil {
 		m.Logger.Error("GetAll error", zap.Error(err))
@@ -20,7 +21,10 @@ func (m *LinkManager) GetAll() (links []*Link, err error) {
 	if links == nil {
 		links = []*Link{}
 	}
-	return links, err
+	if linksByG, err = m.sortLinksByGroup(links); err != nil {
+		return nil, err
+	}
+	return linksByG, err
 }
 
 // GetById получить ссылку по id
@@ -57,4 +61,38 @@ func (m *LinkManager) DeleteLink(id int64) (err error) {
 		m.Logger.Error("DeleteLink error", zap.Error(err))
 	}
 	return err
+}
+
+// sortLinksByGroup возвращает ссылки разбитые по группам
+func (m *LinkManager) sortLinksByGroup(links []*Link) (linksByG []*LinksByGroup, err error) {
+	var groups []string
+	//	lg := map[string]LinksByGroup{}
+	if groups, err = m.Repo.GetGroups(); err != nil {
+		return nil, err
+	}
+
+	linksByG = make([]*LinksByGroup, len(groups))
+
+	for _, k := range links {
+		for ii, kk := range groups {
+			if kk == k.LinkGroup {
+				if linksByG[ii] == nil {
+					linksByG[ii] = &LinksByGroup{}
+				}
+				linksByG[ii].Count += 1
+				linksByG[ii].Links = append(linksByG[ii].Links, k)
+				if linksByG[ii].Name == "" {
+					linksByG[ii].Name = k.LinkGroup
+				}
+				break
+			}
+		}
+	}
+
+	// прибавляем 1 к каждой группе, нужно для rowspan
+	for _, k := range linksByG {
+		k.Count += 1
+	}
+
+	return linksByG, nil
 }
