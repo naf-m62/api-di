@@ -2,6 +2,7 @@ package services
 
 import (
 	"api-di/apps/models"
+	"os"
 	"time"
 
 	"github.com/sarulabs/di"
@@ -19,19 +20,10 @@ var Services = []di.Def{
 		},
 	},
 	{
-		Name:  "config",
-		Scope: di.App,
-		Build: func(ctn di.Container) (interface{}, error) {
-			return Config, nil
-		},
-	},
-	{
 		Name:  "mongo-pool",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			//return mgo.DialWithTimeout(fmt.Sprintf("%s:%s", Config.GetString("mongo.host"), Config.GetString("mongo.port")), 5*time.Second)
-
-			return mgo.DialWithTimeout("0.0.0.0:27017", 5*time.Second)
+			return mgo.DialWithTimeout(os.Getenv("MONGO_URL"), 5*time.Second)
 		},
 		Close: func(obj interface{}) error {
 			obj.(*mgo.Session).Close()

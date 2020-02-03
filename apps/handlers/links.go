@@ -9,7 +9,7 @@ import (
 
 func GetLinkListHandler(w http.ResponseWriter, r *http.Request) {
 	var res []*models.Links
-	res, err := di.Get(r, "manager").(*models.Repository).GetAll()
+	res, err := di.Get(r, "manager").(*models.LinkManager).GetAll()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

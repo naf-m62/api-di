@@ -16,7 +16,7 @@ import (
 
 func Start(app di.Container) {
 	var port string
-	port = services.Config.GetString("service.port")
+	port = os.Getenv("SERVER_PORT")
 	r := mux.NewRouter()
 
 	// Function to apply the middlewares:

@@ -6,8 +6,5 @@ COPY . .
 
 RUN go build -o ~/go/bin/api_di
 
-ENV SERVER_PORT=8093
-ENV MONGO_URL=mongo:27017
-
 CMD ~/go/bin/api_di
 
