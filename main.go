@@ -6,7 +6,7 @@ import (
 	"github.com/sarulabs/di"
 )
 
-func main()  {
+func main() {
 	defer services.Logger.Sync()
 
 	app := *buildConteiners()
@@ -25,8 +25,6 @@ func buildConteiners() *di.Container {
 	if err != nil {
 		services.Logger.Fatal(err.Error())
 	}
-
 	app := builder.Build()
-
 	return &app
 }

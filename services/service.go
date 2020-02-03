@@ -1,10 +1,12 @@
 package services
 
 import (
-	"fmt"
-	"github.com/sarulabs/di"
-	mgo "gopkg.in/mgo.v2"
+	"api-di/apps/models"
 	"time"
+
+	"github.com/sarulabs/di"
+	"go.uber.org/zap"
+	mgo "gopkg.in/mgo.v2"
 )
 
 // Services contains the definitions of the application services.
@@ -27,7 +29,9 @@ var Services = []di.Def{
 		Name:  "mongo-pool",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return mgo.DialWithTimeout(fmt.Sprintf("%s:%s", Config.GetString("mongo.host"), Config.GetString("mongo.port")), 5*time.Second)
+			//return mgo.DialWithTimeout(fmt.Sprintf("%s:%s", Config.GetString("mongo.host"), Config.GetString("mongo.port")), 5*time.Second)
+
+			return mgo.DialWithTimeout("0.0.0.0:27017", 5*time.Second)
 		},
 		Close: func(obj interface{}) error {
 			obj.(*mgo.Session).Close()
@@ -45,23 +49,23 @@ var Services = []di.Def{
 			return nil
 		},
 	},
-	//{
-	//	Name:  "car-repository",
-	//	Scope: di.Request,
-	//	Build: func(ctn di.Container) (interface{}, error) {
-	//		return &garage.CarRepository{
-	//			Session: ctn.Get("mongo").(*mgo.Session),
-	//		}, nil
-	//	},
-	//},
-	//{
-	//	Name:  "car-manager",
-	//	Scope: di.Request,
-	//	Build: func(ctn di.Container) (interface{}, error) {
-	//		return &garage.CarManager{
-	//			Repo:   ctn.Get("car-repository").(*garage.CarRepository),
-	//			Logger: ctn.Get("logger").(*zap.Logger),
-	//		}, nil
-	//	},
-	//},
+	{
+		Name:  "repository",
+		Scope: di.Request,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return &models.Repository{
+				Session: ctn.Get("mongo").(*mgo.Session),
+			}, nil
+		},
+	},
+	{
+		Name:  "manager",
+		Scope: di.Request,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return &models.LinkManager{
+				Repo:   ctn.Get("repository").(*models.Repository),
+				Logger: ctn.Get("logger").(*zap.Logger),
+			}, nil
+		},
+	},
 }
