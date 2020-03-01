@@ -1,17 +1,19 @@
 package server
 
 import (
-	"api-di/apps/handlers"
-	"api-di/apps/middlewares"
-	"api-di/services"
 	"context"
-	"github.com/gorilla/mux"
-	"github.com/sarulabs/di"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/gorilla/mux"
+	"github.com/sarulabs/di"
+
+	"api-di/apps/handlers"
+	"api-di/apps/middlewares"
+	"api-di/services"
 )
 
 func Start(app di.Container) {
@@ -32,9 +34,10 @@ func Start(app di.Container) {
 	}
 
 	r.HandleFunc("/", m(handlers.GetLinkListHandler)).Methods("GET")
-	//r.HandleFunc("/cars", m(handlers.PostCarHandler)).Methods("POST")
-	//r.HandleFunc("/cars/{carId}", m(handlers.GetCarHandler)).Methods("GET")
-	//r.HandleFunc("/cars/{carId}", m(handlers.PutCarHandler)).Methods("PUT")
+	r.HandleFunc("/create", m(handlers.CreateLinkHandler)).Methods("POST")
+	r.HandleFunc("/links/{id}", m(handlers.GetLinkHandler)).Methods("GET")
+	r.HandleFunc("/links/{id}", m(handlers.UpdateLinkHandler)).Methods("PUT")
+	r.HandleFunc("/links/{id}", m(handlers.DeleteLinkHandler)).Methods("DELETE")
 	//r.HandleFunc("/cars/{carId}", m(handlers.DeleteCarHandler)).Methods("DELETE")
 
 	srv := &http.Server{
