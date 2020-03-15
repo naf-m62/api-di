@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"html/template"
 	"net/http"
 	"strconv"
 
@@ -14,8 +14,12 @@ import (
 
 const manager = "manager"
 
+type Handler struct {
+	Tmpl *template.Template
+}
+
 // GetLinkListHandler обработка запроса на получение всех ссылок
-func GetLinkListHandler(w http.ResponseWriter, r *http.Request) {
+func(h *Handler) GetLinkListHandler(w http.ResponseWriter, r *http.Request) {
 	var (
 		res []*models.Link
 		lm  *models.LinkManager
@@ -28,21 +32,52 @@ func GetLinkListHandler(w http.ResponseWriter, r *http.Request) {
 		respError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	response(w, http.StatusOK, res)
+
+	h.ExecTemplate(w, "index.html", struct {
+		Links []*models.Link
+	}{
+		Links: res,
+	})
+}
+
+// CreateLinkForm записывает форму для создания новой ссылки
+func (h *Handler) CreateLinkForm(w http.ResponseWriter, r *http.Request) {
+	h.ExecTemplate(w, "create.html", nil)
+}
+
+// UpdateLinkForm записывает форму для обновления
+func (h *Handler) UpdateLinkForm(w http.ResponseWriter, r *http.Request) {
+	var (
+		res *models.Link
+		err error
+		id  int
+		lm  *models.LinkManager
+	)
+	id, err = strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		respError(w, http.StatusBadRequest, "incorrect id: "+err.Error()+"/n")
+		return
+	}
+
+	lm = getLinkManager(w, r)
+	if res, err = lm.GetById(int64(id)); err != nil {
+		respError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	h.ExecTemplate(w, "update.html", res)
 }
 
 // CreateLinkHandler создать ссылку
 func CreateLinkHandler(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
-	defer func() {
-		r.Body.Close()
-	}()
-
 	var (
-		linkNew *models.Link
 		lm      *models.LinkManager
+		err error
 	)
-	err = json.Unmarshal(body, &linkNew)
+
+	linkNew := &models.Link{
+		Url:         r.FormValue("url"),
+		Description: r.FormValue("description"),
+	}
 
 	lm = getLinkManager(w, r)
 	err = lm.CreateLink(linkNew)
@@ -51,8 +86,7 @@ func CreateLinkHandler(w http.ResponseWriter, r *http.Request) {
 		respError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 // GetLinkHandler получить ссылку по id
@@ -81,16 +115,15 @@ func GetLinkHandler(w http.ResponseWriter, r *http.Request) {
 
 // UpdateLinkHandler обновить ссылку
 func UpdateLinkHandler(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
-	defer func() {
-		r.Body.Close()
-	}()
 	var (
-		link *models.Link
 		lm   *models.LinkManager
 		id   int
+		err error
 	)
-	err = json.Unmarshal(body, &link)
+	link := &models.Link{
+		Url:         r.FormValue("url"),
+		Description: r.FormValue("description"),
+	}
 	id, err = strconv.Atoi(mux.Vars(r)["id"])
 	link.ID = int64(id)
 	if err != nil {
@@ -105,7 +138,7 @@ func UpdateLinkHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 // DeleteLinkHandler удалить ссылку по id
@@ -128,7 +161,6 @@ func DeleteLinkHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	return
 }
 
 // getLinkManager отдает manager
@@ -157,4 +189,14 @@ func respError(w http.ResponseWriter, code int, errMessage string) {
 	w.WriteHeader(code)
 	result, _ = json.Marshal(map[string]string{"error": errMessage})
 	w.Write(result)
+}
+
+// ExecTemplate записывает ответ с шаблоном
+func(h *Handler) ExecTemplate(w http.ResponseWriter, name string, data interface{}) {
+	var err error
+	err = h.Tmpl.ExecuteTemplate(w, name, data)
+	if err != nil {
+		respError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
 }
