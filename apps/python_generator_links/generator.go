@@ -35,27 +35,3 @@ func GenerateLinks(testStandNumber int) (links GenerateLinkResponse, err error) 
 
 	return outLinks, nil
 }
-
-// convertToModelLinks конвертирует из списка сгенерированых ссылок, полученного из питон скрипта в слайс ссылок
-//func convertToModelLinks(outLinkTotal GenerateLinkResponse, testStandNumber int) (dbLinkTotal []models.Link) {
-//	for _, outLink := range outLinkTotal.Links {
-//		var desc string
-//		if outLink.Db != "" {
-//			desc += "db: " + outLink.Db + ", \n"
-//		}
-//		if outLink.Login != "" {
-//			desc += "login: " + outLink.Login + ", \n"
-//		}
-//		if outLink.Password != "" {
-//			desc += "password: " + outLink.Password + ", \n"
-//		}
-//		dbLink := models.Link{
-//			ID:          time.Now().Unix(),
-//			Url:         outLink.Host,
-//			LinkGroup:   "test" + strconv.Itoa(testStandNumber),
-//			Description: desc,
-//		}
-//		dbLinkTotal = append(dbLinkTotal, dbLink)
-//	}
-//	return dbLinkTotal
-//}
