@@ -40,9 +40,11 @@ func Start(app di.Container) {
 
 	r.HandleFunc("/", m(getHand.GetLinkListHandler)).Methods("GET")
 	r.HandleFunc("/create", m(getHand.CreateLinkForm)).Methods("GET")
+	r.HandleFunc("/stand/create", m(getHand.CreateStandLinkForm)).Methods("GET")
 	r.HandleFunc("/links/{id}", m(getHand.UpdateLinkForm)).Methods("GET")
 
 	r.HandleFunc("/create", m(handlers.CreateLinkHandler)).Methods("POST")
+	r.HandleFunc("/stand/create", m(handlers.CreateStandLinkHandler)).Methods("POST")
 	r.HandleFunc("/links/{id}", m(handlers.UpdateLinkHandler)).Methods("POST")
 	r.HandleFunc("/links/{id}", m(handlers.DeleteLinkHandler)).Methods("DELETE")
 

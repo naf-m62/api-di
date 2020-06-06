@@ -45,6 +45,11 @@ func (h *Handler) CreateLinkForm(w http.ResponseWriter, r *http.Request) {
 	h.ExecTemplate(w, "create.html", nil)
 }
 
+// CreateStandLinkForm записывает форму для создания новой ссылки
+func (h *Handler) CreateStandLinkForm(w http.ResponseWriter, r *http.Request) {
+	h.ExecTemplate(w, "create_stand.html", nil)
+}
+
 // UpdateLinkForm записывает форму для обновления
 func (h *Handler) UpdateLinkForm(w http.ResponseWriter, r *http.Request) {
 	var (
@@ -163,6 +168,30 @@ func DeleteLinkHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+// CreateStandLinkHandler создает список ссылок для стенда
+func CreateStandLinkHandler(w http.ResponseWriter, r *http.Request) {
+	var (
+		lm                 *models.LinkManager
+		testStandNumberStr = r.FormValue("testStandNumber")
+		err                error
+		testStandNumberInt int
+	)
+
+	if testStandNumberInt, err = strconv.Atoi(testStandNumberStr); err != nil {
+		respError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	lm = getLinkManager(w, r)
+	err = lm.CreateStandLinks(testStandNumberInt)
+
+	if err != nil {
+		respError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 // getLinkManager отдает manager
